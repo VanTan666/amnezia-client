@@ -80,7 +80,7 @@ class TvVpnService : VpnService() {
   val open=PendingIntent.getActivity(this,0,Intent(this,MainActivity::class.java),PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
   val stop=PendingIntent.getService(this,1,Intent(this,TvVpnService::class.java).setAction(STOP),PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
   val text=when(state.value){ProtocolState.CONNECTED->"Подключено";ProtocolState.DISCONNECTING->"Отключение";else->"Подключение"}
-  return Notification.Builder(this,"vpn").setSmallIcon(android.R.drawable.ic_lock_lock).setContentTitle("Amnezia TV · $text").setContentText(ui.value.name).setContentIntent(open).addAction(Notification.Action.Builder(null,"Отключить",stop).build()).setOngoing(true).build()
+  return Notification.Builder(this,"vpn").setSmallIcon(android.R.drawable.ic_lock_lock).setContentTitle("Amnezia · $text").setContentText(ui.value.name).setContentIntent(open).addAction(Notification.Action.Builder(null,"Отключить",stop).build()).setOngoing(true).build()
  }
  override fun onRevoke(){disconnect()}
  override fun onDestroy(){network.unbindNetworkListener();timeout?.cancel();scope.cancel();runBlocking(Dispatchers.IO){operations.withLock{runCatching{protocol.stopVpn()}}};state.value=ProtocolState.DISCONNECTED;ui.value=ui.value.copy(state=ProtocolState.DISCONNECTED);super.onDestroy()}

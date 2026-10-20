@@ -2,7 +2,7 @@
 
 A separate native Android TV target in the Amnezia VPN fork. Based on upstream tag `5.0.3.0`, commit `de93650a90739b87bb47a632872ea9d0adc9412f`.
 
-The UI has three focus targets: Settings → Connect/Disconnect → Server. Focus starts on Connect, with a thick white outline and a slight scale increase. D-pad navigation is explicit. Choosing a server while connected opens a confirmation to disconnect, then shows the server list. Pressing Back/Home leaves the VPN running. The foreground notification provides a disconnect action. Network changes trigger reconnection. Connection attempts have a 25-second timeout and can be cancelled.
+The UI has three focus targets: Settings → Connect/Disconnect → Server. Version 0.2 uses the upstream dark palette (#0E0E11, #1C1D21, #FBB26A), upstream Amnezia mark and a central circular connect button; slogans and TV EDITION branding were removed. Focus starts on Connect, with a thick apricot ring and a shaded interior. D-pad navigation is explicit. Choosing a server while connected opens a confirmation to disconnect, then shows the server list. Pressing Back/Home leaves the VPN running. The foreground notification provides a disconnect action. Network changes trigger reconnection. Connection attempts have a 25-second timeout and can be cancelled.
 
 ## Scope
 
@@ -31,3 +31,5 @@ GPL-3.0; see the repository LICENSE and upstream THIRD_PARTY_LICENSES.md. Source
 ## Проверено на Mi Box (Android 9)
 
 20.10.2026: установка отдельным пакетом; импорт ключа AWG2 в Android Keystore; подключение с handshake и Android VPN VALIDATED (UID TV-сборки); отключение с исчезновением VPN-интерфейса; системный отказ в VPN-разрешении; открытие списка серверов и настроек. Скриншоты снимались с реальной приставки. Физическое управление пультом и длительная работа требуют пользовательской проверки. В этот репозиторий ключ, профиль и сетевые дампы не включены.
+
+The Android vectors `amnezia_mark.xml` and `banner.xml` adapt the upstream `client/images/controls/amnezia.svg` path. User-visible app label is Amnezia; the About dialog identifies it as an unofficial build.

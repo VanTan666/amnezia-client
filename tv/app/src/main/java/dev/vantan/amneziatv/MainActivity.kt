@@ -20,14 +20,12 @@ class MainActivity:Activity() {
  private lateinit var root:LinearLayout
  private lateinit var connect:Button
  private lateinit var status:TextView
- private lateinit var hint:TextView
  private lateinit var server:Button
  private lateinit var settingsButton:Button
- private lateinit var light:ImageView
  private var error:TextView?=null
- private val bg=Color.rgb(9,11,18)
- private val muted=Color.rgb(155,164,183)
- private val accent=Color.rgb(183,164,255)
+ private val bg=Color.rgb(14,14,17)
+ private val muted=Color.rgb(135,139,145)
+ private val accent=Color.rgb(251,178,106)
  private var selectedName="Сервер не добавлен"
  private fun d(n:Int)=(n*resources.displayMetrics.density).toInt()
  override fun onCreate(savedInstanceState:Bundle?) {
@@ -50,56 +48,59 @@ class MainActivity:Activity() {
  private fun shape(color:Int,r:Int=22,stroke:Int=0)=GradientDrawable().apply { setColor(color);cornerRadius=d(r).toFloat();if(stroke!=0)setStroke(d(3),stroke) }
  private fun text(s:String,size:Float,color:Int=Color.WHITE,bold:Boolean=false)=TextView(this).apply { text=s;textSize=size;setTextColor(color);if(bold)typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL);includeFontPadding=false }
  private fun button(s:String,primary:Boolean=false)=Button(this).apply {
-  id=View.generateViewId();text=s;textSize=20f;isAllCaps=false;setTextColor(if(primary)bg else Color.WHITE)
-  typeface=Typeface.create("sans-serif-medium",Typeface.NORMAL);minHeight=d(62);setPadding(d(22),d(12),d(22),d(12));isFocusable=true
-  background=shape(if(primary)accent else Color.rgb(29,34,48),16)
+  id=View.generateViewId();text=s;textSize=18f;isAllCaps=false;setTextColor(Color.rgb(215,216,219))
+  typeface=Typeface.create("sans-serif",Typeface.NORMAL);minHeight=d(58);setPadding(d(20),d(10),d(20),d(10));isFocusable=true
+  stateListAnimator=null;elevation=0f
+  background=shape(Color.rgb(28,29,33),12)
   setOnFocusChangeListener { v,focused ->
-   v.background=shape(if(primary)accent else if(focused)Color.rgb(45,53,74) else Color.rgb(29,34,48),16,if(focused)Color.WHITE else 0)
-   v.animate().scaleX(if(focused)1.035f else 1f).scaleY(if(focused)1.035f else 1f).setDuration(110).start()
+   v.background=shape(if(focused)Color.rgb(44,45,48) else Color.rgb(28,29,33),12,if(focused)accent else 0)
   }
+ }
+ private fun connectionBackground(focused:Boolean) = GradientDrawable().apply {
+  shape=GradientDrawable.OVAL
+  setColor(if(focused)Color.rgb(38,30,26) else bg)
+  val connected=TvVpnService.ui.value.state==ProtocolState.CONNECTED
+  setStroke(d(if(focused)4 else 2),if(focused || connected)accent else Color.rgb(135,139,145))
  }
  private fun spacer(h:Int)=View(this).apply { layoutParams=LinearLayout.LayoutParams(1,d(h)) }
  private fun column()=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL }
  private fun buildMain() {
-  root=column().apply { clipChildren=false;clipToPadding=false;setBackgroundColor(bg);setPadding(d(48),d(30),d(48),d(30)) }
+  root=column().apply { clipChildren=false;clipToPadding=false;setBackgroundColor(bg);setPadding(d(48),d(28),d(48),d(28)) }
   setContentView(root)
-  val top=LinearLayout(this).apply { clipChildren=false;clipToPadding=false;gravity=Gravity.CENTER_VERTICAL }
-  top.addView(text("Amnezia",28f,bold=true),LinearLayout.LayoutParams(0,-2,1f))
-  top.addView(text("TV EDITION",12f,muted),LinearLayout.LayoutParams(d(110),-2))
-  val settings=button("Настройки").apply { setOnClickListener{settings()} };settingsButton=settings
-  top.addView(settings,LinearLayout.LayoutParams(d(170),d(58)));root.addView(top)
-  root.addView(spacer(22))
-  val body=LinearLayout(this).apply { clipChildren=false;clipToPadding=false;gravity=Gravity.CENTER_VERTICAL }
-  val left=column().apply { setPadding(0,0,d(45),0) }
-  left.addView(text("Ваш VPN.\nНа большом экране.",38f,bold=true))
-  left.addView(spacer(18));left.addView(text("Выберите сервер и нажмите\n«Подключиться» — всё готово.",19f,muted))
-  left.addView(spacer(22));hint=text("Управление стрелками · выбор кнопкой OK",14f,muted);left.addView(hint)
-  body.addView(left,LinearLayout.LayoutParams(0,-2,1f))
-  val card=column().apply { clipChildren=false;clipToPadding=false;gravity=Gravity.CENTER;setPadding(d(26),d(24),d(26),d(24));background=shape(Color.rgb(20,24,38),26) }
-  light=ImageView(this).apply{setImageResource(R.drawable.power);setColorFilter(accent)};card.addView(light,LinearLayout.LayoutParams(d(64),d(64)))
-  card.addView(spacer(12));status=text("Не подключено",23f,bold=true).apply{gravity=Gravity.CENTER};card.addView(status)
-  card.addView(spacer(18));connect=button("Подключиться",true).apply { setOnClickListener { toggle() } }
-  card.addView(connect,LinearLayout.LayoutParams(-1,d(66)))
-  card.addView(spacer(12));error=text("",13f,Color.rgb(255,175,175)).apply{gravity=Gravity.CENTER};card.addView(error)
-  body.addView(card,LinearLayout.LayoutParams(d(320),-2));root.addView(body,LinearLayout.LayoutParams(-1,0,1f))
-  root.addView(spacer(20));server=button("Сервер  ›").apply { gravity=Gravity.CENTER_VERTICAL;setOnClickListener{servers()} }
-  root.addView(server,LinearLayout.LayoutParams(-1,d(68)))
-  settings.nextFocusDownId=connect.id;settings.nextFocusUpId=settings.id;settings.nextFocusLeftId=settings.id;settings.nextFocusRightId=settings.id
-  connect.nextFocusUpId=settings.id;connect.nextFocusDownId=server.id;connect.nextFocusLeftId=connect.id;connect.nextFocusRightId=connect.id
-  server.nextFocusUpId=connect.id;server.nextFocusDownId=server.id;server.nextFocusLeftId=server.id;server.nextFocusRightId=server.id
+  val top=LinearLayout(this).apply { gravity=Gravity.CENTER_VERTICAL }
+  top.addView(ImageView(this).apply{setImageResource(R.drawable.amnezia_mark)},LinearLayout.LayoutParams(d(30),d(30)).apply{rightMargin=d(12)})
+  top.addView(text("Amnezia",26f),LinearLayout.LayoutParams(0,-2,1f))
+  settingsButton=button("Настройки").apply{setOnClickListener{settings()}}
+  top.addView(settingsButton,LinearLayout.LayoutParams(d(148),d(54)));root.addView(top)
+  val body=column().apply{gravity=Gravity.CENTER;clipChildren=false;clipToPadding=false}
+  status=text("Не подключено",16f,muted).apply{gravity=Gravity.CENTER};body.addView(status)
+  body.addView(spacer(14))
+  connect=button("Подключиться",true).apply {
+   textSize=19f;gravity=Gravity.CENTER;setPadding(d(12),d(35),d(12),d(35))
+   val icon=getDrawable(R.drawable.power)!!.mutate().apply{setTint(Color.rgb(215,216,219));setBounds(0,0,d(58),d(58))}
+   setCompoundDrawables(null,icon,null,null);compoundDrawablePadding=d(18)
+   background=connectionBackground(true)
+   setOnFocusChangeListener{v,focused->v.background=connectionBackground(focused)}
+   setOnClickListener{toggle()}
+  }
+  body.addView(connect,LinearLayout.LayoutParams(d(220),d(220)))
+  body.addView(spacer(24))
+  server=button("Добавить сервер  ›").apply { gravity=Gravity.CENTER;setOnClickListener{servers()} }
+  body.addView(server,LinearLayout.LayoutParams(d(360),d(60)))
+  body.addView(spacer(12));error=text("",14f,Color.rgb(235,87,87)).apply{gravity=Gravity.CENTER};body.addView(error,LinearLayout.LayoutParams(-1,d(36)))
+  root.addView(body,LinearLayout.LayoutParams(-1,0,1f))
   refreshServer();render(TvVpnService.ui.value);connect.requestFocus()
  }
- private fun refreshServer() { try { selectedName=store.selected()?.optString("name") ?: "Добавить сервер";server.text="Сервер  ·  $selectedName      ›" } catch(e:Exception) { server.text="Не удалось открыть серверы";showError("Хранилище ключей недоступно. Данные не удалены.") } }
+ private fun refreshServer() { try { selectedName=store.selected()?.optString("name") ?: "Добавить сервер";server.text="$selectedName    ›" } catch(e:Exception) { server.text="Не удалось открыть серверы";showError("Хранилище ключей недоступно. Данные не удалены.") } }
  private fun render(v:VpnUi) {
-  val busy=v.state in listOf(ProtocolState.CONNECTING,ProtocolState.RECONNECTING,ProtocolState.DISCONNECTING)
   status.text=when(v.state){ProtocolState.CONNECTED->"Подключено";ProtocolState.CONNECTING->"Подключение…";ProtocolState.RECONNECTING->"Восстанавливаем связь…";ProtocolState.DISCONNECTING->"Отключение…";else->"Не подключено"}
   connect.text=when(v.state){ProtocolState.CONNECTED->"Отключиться";ProtocolState.CONNECTING,ProtocolState.RECONNECTING->"Отменить";ProtocolState.DISCONNECTING->"Подождите…";else->"Подключиться"}
   connect.isEnabled=true
-  light.setColorFilter(if(v.state==ProtocolState.CONNECTED)Color.rgb(116,233,176) else accent)
-  error?.text=v.error ?: if(v.state==ProtocolState.CONNECTED)v.name else ""
+  connect.compoundDrawables[1]?.setTint(if(v.state==ProtocolState.CONNECTED)accent else Color.rgb(215,216,219))
+  connect.background=connectionBackground(connect.hasFocus())
+  error?.text=v.error ?: ""
   if(v.error==null)error?.setTextColor(muted) else error?.setTextColor(Color.rgb(255,175,175))
   server.isEnabled=true
-  hint.text=if(v.state==ProtocolState.CONNECTED)"VPN работает и после выхода из приложения" else "Управление стрелками · выбор кнопкой OK"
  }
  private fun toggle() {
   val state=TvVpnService.ui.value.state
@@ -116,7 +117,7 @@ class MainActivity:Activity() {
  }
  private fun showError(message:String) { error?.text=message;error?.setTextColor(Color.rgb(255,175,175)) }
  private fun dialog(title:String,labels:List<String>,actions:List<()->Unit>) {
-  val panel=column().apply { clipChildren=false;clipToPadding=false;setPadding(d(28),d(24),d(28),d(24));background=shape(Color.rgb(20,24,38),22) }
+  val panel=column().apply { clipChildren=false;clipToPadding=false;setPadding(d(28),d(24),d(28),d(24));background=shape(Color.rgb(28,29,33),22) }
   panel.addView(text(title,26f,bold=true));panel.addView(spacer(20))
   val scroll=ScrollView(this);val choices=column().apply{clipChildren=false;clipToPadding=false;setPadding(d(10),d(4),d(10),d(4))};scroll.clipChildren=false;scroll.clipToPadding=false;scroll.addView(choices)
   val dialog=Dialog(this).apply {setContentView(panel);window?.setBackgroundDrawableResource(android.R.color.transparent);window?.setLayout(d(580),-2)}
@@ -140,9 +141,9 @@ class MainActivity:Activity() {
  private fun settings() {
   dialog("Настройки",listOf("Добавить сервер по ключу","Удалить выбранный сервер","Открыть обычную Amnezia","Об этом приложении"),listOf(
    {importDialog()},
-   {if(TvVpnService.ui.value.state!=ProtocolState.DISCONNECTED)showError("Сначала отключите VPN") else AlertDialog.Builder(this).setTitle("Удалить сервер?").setMessage("Ключ будет удалён только из Amnezia TV.").setNegativeButton("Отмена",null).setPositiveButton("Удалить"){_,_->runCatching{store.deleteSelected();refreshServer()}.onFailure{showError("Не удалось удалить сервер")}}.show()},
+   {if(TvVpnService.ui.value.state!=ProtocolState.DISCONNECTED)showError("Сначала отключите VPN") else AlertDialog.Builder(this).setTitle("Удалить сервер?").setMessage("Ключ будет удалён только из этой сборки.").setNegativeButton("Отмена",null).setPositiveButton("Удалить"){_,_->runCatching{store.deleteSelected();refreshServer()}.onFailure{showError("Не удалось удалить сервер")}}.show()},
    {try{startActivity(Intent().setClassName("org.amnezia.vpn","org.amnezia.vpn.AmneziaActivity"))}catch(e:Exception){showError("Обычная Amnezia не установлена")}},
-   {AlertDialog.Builder(this).setTitle("Amnezia TV 0.1").setMessage("Неофициальный TV-форк Amnezia VPN 5.0.3.0.\nVPN-движок: AmneziaWG из официальной Amnezia.\nПоддерживаются импортированные ключи AmneziaWG, включая AWG 2.\n\nИсходники: github.com/VanTan666/amnezia-client, ветка tv-ui. Лицензия GPL-3.0.\n\nСерверы хранятся зашифрованно на приставке. Телеметрии нет.").setPositiveButton("Понятно",null).show()}
+   {AlertDialog.Builder(this).setTitle("Amnezia · 0.2").setMessage("Неофициальная сборка на основе Amnezia VPN 5.0.3.0.\nVPN-движок: AmneziaWG из официальной Amnezia.\nПоддерживаются импортированные ключи AmneziaWG, включая AWG 2.\n\nИсходники: github.com/VanTan666/amnezia-client, ветка tv-ui. Лицензия GPL-3.0.\n\nСерверы хранятся зашифрованно на приставке. Телеметрии нет.").setPositiveButton("Понятно",null).show()}
   ))
  }
  private fun importDialog() {
