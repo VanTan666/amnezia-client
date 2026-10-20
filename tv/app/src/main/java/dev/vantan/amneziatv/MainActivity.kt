@@ -58,9 +58,9 @@ class MainActivity:Activity() {
  }
  private fun connectionBackground(focused:Boolean) = GradientDrawable().apply {
   shape=GradientDrawable.OVAL
-  setColor(if(focused)Color.rgb(38,30,26) else bg)
   val connected=TvVpnService.ui.value.state==ProtocolState.CONNECTED
-  setStroke(d(if(focused)4 else 2),if(focused || connected)accent else Color.rgb(135,139,145))
+  setColor(if(connected)Color.rgb(38,30,26) else Color.rgb(28,29,33))
+  setStroke(d(if(focused)4 else 2),if(connected)accent else if(focused)Color.rgb(215,216,219) else Color.rgb(135,139,145))
  }
  private fun spacer(h:Int)=View(this).apply { layoutParams=LinearLayout.LayoutParams(1,d(h)) }
  private fun column()=LinearLayout(this).apply { orientation=LinearLayout.VERTICAL }
