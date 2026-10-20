@@ -1,0 +1,26 @@
+plugins { id 'com.android.application'; id 'org.jetbrains.kotlin.android' }
+android {
+ namespace 'dev.vantan.amneziatv'
+ compileSdk 35
+ buildToolsVersion "35.0.0"
+ defaultConfig { applicationId 'dev.vantan.amneziatv'; minSdk 28; targetSdk 35; versionCode 1; versionName '0.1.0'; ndk { abiFilters 'armeabi-v7a' } }
+ buildFeatures { buildConfig true }
+ buildTypes { release { minifyEnabled false } }
+ sourceSets.main.java.srcDirs += [
+  '../../client/android/utils/src/main/kotlin',
+  '../../client/android/protocolApi/src/main/kotlin',
+  '../../client/android/wireguard/src/main/kotlin',
+  '../../client/android/awg/src/main/kotlin'
+ ]
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+ kotlinOptions { jvmTarget = '17' }
+ packaging { jniLibs { useLegacyPackaging true } }
+ testOptions { unitTests.returnDefaultValues = true }
+}
+dependencies {
+ implementation 'androidx.core:core-ktx:1.13.1'
+ implementation 'androidx.security:security-crypto-ktx:1.1.0-alpha06'
+ implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+ testImplementation 'junit:junit:4.13.2'
+ testImplementation 'org.json:json:20240303'
+}

@@ -201,8 +201,9 @@ open class Wireguard : Protocol() {
                     delay(1000)
                     continue
                 }
-                if (lastHandshake == -2L || lastHandshake > 0L) state.value = CONNECTED
-                else if (lastHandshake == -1L) state.value = DISCONNECTED
+                // Never report a successful connection when the backend cannot return its handshake.
+                if (lastHandshake > 0L) state.value = CONNECTED
+                else if (lastHandshake < 0L) state.value = DISCONNECTED
                 statusJob = null
                 break
             }
